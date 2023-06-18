@@ -1,0 +1,3 @@
+MaxSpeed:500.000pps without load (with min stable acc/dec time 300ms, pos Error 2200)
+
+100000 pulse/round

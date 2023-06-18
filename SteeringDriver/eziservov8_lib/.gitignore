@@ -1,0 +1,8 @@
+.vscode
+/EziservoV8/.vs/*
+/EziservoV8/Debug/*
+/EziservoV8/EziservoV8.sln
+/EziservoV8/EziservoV8.vcxproj
+/EziservoV8/EziservoV8.vcxproj.filters
+/EziservoV8/EziservoV8.vcxproj.user
+/EziservoV8/main.c
