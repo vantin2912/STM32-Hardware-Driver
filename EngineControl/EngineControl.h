@@ -10,7 +10,7 @@
 
 
 #include "main.h"
-#include "SyncPrintf.h"
+#include "SyncPrintf/SyncPrintf.h"
 #include "GPIO/GPIOHandler.h"
 //#define MotorTimer 				TIM8
 //#define MotorTimer_Channel		LL_TIM_CHANNEL_CH1N

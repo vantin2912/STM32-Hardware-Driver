@@ -8,11 +8,8 @@
 #ifndef WHEELCONTROL_H_
 #define WHEELCONTROL_H_
 #include "main.h"
-#include "FAS_EziMOTIONPlusR.h"
+#include "SteeringDriver/eziservov8_lib/EziservoV8/FAS_EziMOTIONPlusR.h"
 
-extern UART_HandleTypeDef huart6;
-
-#define EZI_UART huart6
 
 #define Angle2Pulse(Ang) (Ang*12000.0)
 #define Pulse2Angle(Pulse) (Pulse/12000.0)
