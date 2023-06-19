@@ -82,7 +82,9 @@ void INA219_setConfig(INA219_t *ina219, uint16_t Config)
 {
 	Write16(ina219, INA219_REG_CONFIG, Config);
 }
-
+/**
+ *	Calib for 0.1 Ohm Shunt Resistor
+ */
 void INA219_setCalibration_32V_2A(INA219_t *ina219)
 {
 	uint16_t config = INA219_CONFIG_BVOLTAGERANGE_32V |
@@ -100,7 +102,9 @@ void INA219_setCalibration_32V_2A(INA219_t *ina219)
 	INA219_setCalibration(ina219, ina219->calibrationValue);
 	INA219_setConfig(ina219, config);
 }
-
+/**
+ *	Calib for 0.1 Ohm Shunt Resistor
+ */
 void INA219_setCalibration_32V_1A(INA219_t *ina219)
 {
 	uint16_t config = INA219_CONFIG_BVOLTAGERANGE_32V |
@@ -116,8 +120,10 @@ void INA219_setCalibration_32V_1A(INA219_t *ina219)
 	INA219_setConfig(ina219, config);
 }
 
-
-void INA219_setCalibration_32V_10A(INA219_t *ina219)
+/**
+ *	Calib for 5 mOhm Shunt Resistor
+ */
+void INA219_setCalibration_32V_10A_5mOhm(INA219_t *ina219)
 {
 	uint16_t config = INA219_CONFIG_BVOLTAGERANGE_32V |
 						INA219_CONFIG_GAIN_8_320MV | INA219_CONFIG_BADCRES_12BIT |
@@ -132,7 +138,9 @@ void INA219_setCalibration_32V_10A(INA219_t *ina219)
 	INA219_setCalibration(ina219, ina219->calibrationValue);
 	INA219_setConfig(ina219, config);
 }
-
+/**
+ *	Calib for 0.1 Ohm Shunt Resistor
+ */
 void INA219_setCalibration_16V_400mA(INA219_t *ina219)
 {
 	uint16_t config = INA219_CONFIG_BVOLTAGERANGE_16V |

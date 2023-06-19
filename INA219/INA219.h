@@ -112,7 +112,7 @@ void INA219_Reset(INA219_t *ina219);
 void INA219_setCalibration(INA219_t *ina219, uint16_t CalibrationData);
 uint16_t INA219_getConfig(INA219_t *ina219);
 void INA219_setConfig(INA219_t *ina219, uint16_t Config);
-void INA219_setCalibration_32V_10A(INA219_t *ina219);
+void INA219_setCalibration_32V_10A_5mOhm(INA219_t *ina219);
 void INA219_setCalibration_32V_2A(INA219_t *ina219);
 void INA219_setCalibration_32V_1A(INA219_t *ina219);
 void INA219_setCalibration_16V_400mA(INA219_t *ina219);

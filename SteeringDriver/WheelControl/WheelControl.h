@@ -45,12 +45,13 @@ typedef struct Wheel_HandlerStruct
 {
 	FAS_HandlerStruct* EziHandler ;
 	uint8_t devID;
-	uint8_t limit;
+	float letfLimit, RightLimit;
 	uint8_t Mode;
 } Wheel_HandlerStruct;
 
 
-uint8_t Wheel_Init(Wheel_HandlerStruct* WheelHandler);
+uint8_t Wheel_Init(Wheel_HandlerStruct* WheelHandler, UART_OS_HandlerStruct* uart);
+uint8_t Wheel_setLimit(Wheel_HandlerStruct* WheelHandler, float LeftLimit, float RightLimit);
 uint8_t Wheel_Start(Wheel_HandlerStruct* WheelHandler);
 uint8_t Wheel_Stop(Wheel_HandlerStruct* WheelHandler);
 
