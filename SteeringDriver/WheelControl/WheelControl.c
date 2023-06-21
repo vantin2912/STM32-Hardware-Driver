@@ -55,15 +55,23 @@ uint8_t FAS_Unlock(FAS_HandlerStruct* nPortNo)
 uint8_t FAS_Init(FAS_HandlerStruct* nPortNo)
 {
 	nPortNo->uartLock = osMutexNew(NULL);
-
 	return 0;
 }
 
-uint8_t Wheel_Init(Wheel_HandlerStruct* SteerWheel)
+uint8_t Wheel_Init(Wheel_HandlerStruct* SteerWheel, UART_OS_HandlerStruct* uart)
 {
+	SteerWheel->EziHandler->uart = uart;
 	FAS_Init(SteerWheel->EziHandler);
+
+	Wheel_setLimit(SteerWheel, 25, 25);
 	Wheel_ClearPos(SteerWheel);
 
+	return Wheel_OK;
+}
+uint8_t Wheel_setLimit(Wheel_HandlerStruct* SteerWheel, float LeftLimit, float RightLimit)
+{
+	SteerWheel->RightLimit = RightLimit;
+	SteerWheel->letfLimit = LeftLimit;
 	return Wheel_OK;
 }
 uint8_t Wheel_Start(Wheel_HandlerStruct* SteerWheel)
