@@ -288,8 +288,8 @@ enum BNO055_axis_map_sign_t {
 };
 void BNO055_Init(BNO055_HandlerStruct* bno055, BNO055_I2CHandler* i2c, uint8_t Address);
 
-void BNO055_writeData(BNO055_HandlerStruct* bno055, uint8_t reg, uint8_t data);
-void BNO055_readData(BNO055_HandlerStruct* bno055, uint8_t reg, uint8_t *data, uint8_t len);
+uint8_t BNO055_writeData(BNO055_HandlerStruct* bno055, uint8_t reg, uint8_t data);
+uint8_t BNO055_readData(BNO055_HandlerStruct* bno055, uint8_t reg, uint8_t *data, uint8_t len);
 
 void BNO055_reset(BNO055_HandlerStruct* bno055);
 BNO055_opmode_t BNO055_getOperationMode(BNO055_HandlerStruct* bno055);
@@ -308,16 +308,19 @@ uint8_t BNO055_getSystemError(BNO055_HandlerStruct* bno055);
 int16_t BNO055_getSWRevision(BNO055_HandlerStruct* bno055);
 
 BNO055_self_test_result_t BNO055_getSelfTestResult(BNO055_HandlerStruct* bno055);
-BNO055_calibration_state_t BNO055_getCalibrationState(BNO055_HandlerStruct* bno055);
+int BNO055_getCalibrationState(BNO055_HandlerStruct* bno055, BNO055_calibration_state_t* calib_state);
+//BNO055_calibration_state_t BNO055_getCalibrationState(BNO055_HandlerStruct* bno055);
+
 BNO055_calibration_data_t BNO055_getCalibrationData(BNO055_HandlerStruct* bno055);
 void BNO055_setCalibrationData(BNO055_HandlerStruct* bno055, BNO055_calibration_data_t calData);
-BNO055_vector_t BNO055_getVectorAccelerometer(BNO055_HandlerStruct* bno055);
-BNO055_vector_t BNO055_getVectorMagnetometer(BNO055_HandlerStruct* bno055);
-BNO055_vector_t BNO055_getVectorGyroscope(BNO055_HandlerStruct* bno055);
-BNO055_vector_t BNO055_getVectorEuler(BNO055_HandlerStruct* bno055);
-BNO055_vector_t BNO055_getVectorLinearAccel(BNO055_HandlerStruct* bno055);
-BNO055_vector_t BNO055_getVectorGravity(BNO055_HandlerStruct* bno055);
-BNO055_vector_t BNO055_getVectorQuaternion(BNO055_HandlerStruct* bno055);
+int BNO055_getVectorAccelerometer(BNO055_HandlerStruct* bno055, BNO055_vector_t* result);
+int BNO055_getVectorMagnetometer(BNO055_HandlerStruct* bno055, BNO055_vector_t* result);
+int BNO055_getVectorGyroscope(BNO055_HandlerStruct* bno055, BNO055_vector_t* result);
+int BNO055_getVectorEuler(BNO055_HandlerStruct* bno055, BNO055_vector_t* result);
+int BNO055_getVectorLinearAccel(BNO055_HandlerStruct* bno055, BNO055_vector_t* result);
+int BNO055_getVectorGravity(BNO055_HandlerStruct* bno055, BNO055_vector_t* result);
+int BNO055_getVectorQuaternion(BNO055_HandlerStruct* , BNO055_vector_t* result);
+
 void BNO055_setAxisMap(BNO055_HandlerStruct* bno055, BNO055_axis_map_t axis);
 
 #ifdef __cplusplus

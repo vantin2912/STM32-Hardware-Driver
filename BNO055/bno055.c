@@ -9,7 +9,7 @@ uint16_t magScale = 16;
 uint16_t quaScale = (1<<14);    // 2^14
 
 
-__weak void BNO055_writeData(BNO055_HandlerStruct* bno055, uint8_t reg, uint8_t data)
+__weak uint8_t BNO055_writeData(BNO055_HandlerStruct* bno055, uint8_t reg, uint8_t data)
 {
 	int status;
 #ifdef USE_RTOS
@@ -19,70 +19,18 @@ __weak void BNO055_writeData(BNO055_HandlerStruct* bno055, uint8_t reg, uint8_t 
 	status = HAL_I2C_Mem_Write_DMA(bno055->i2c, bno055->Address << 1, reg, 1, data, 1, BNO055_WRITE_TIMEOUT);
 #endif
 
-	if (status == HAL_OK) {
-	    return;
-	  }
-
-	  if (status == HAL_ERROR) {
-	    BNO055_printf("HAL_I2C_Master_Transmit HAL_ERROR\r\n");
-	  } else if (status == HAL_TIMEOUT) {
-	    BNO055_printf("HAL_I2C_Master_Transmit HAL_TIMEOUT\r\n");
-	  } else if (status == HAL_BUSY) {
-	    BNO055_printf("HAL_I2C_Master_Transmit HAL_BUSY\r\n");
-	  } else {
-	    BNO055_printf("Unknown status data %d \r\n", status);
-	  }
-
-	  uint32_t error = HAL_I2C_GetError(bno055->i2c->hi2c);
-	  if (error == HAL_I2C_ERROR_NONE) {
-	    return;
-	  } else if (error == HAL_I2C_ERROR_BERR) {
-	    BNO055_printf("HAL_I2C_ERROR_BERR\r\n");
-	  } else if (error == HAL_I2C_ERROR_ARLO) {
-	    BNO055_printf("HAL_I2C_ERROR_ARLO\r\n");
-	  } else if (error == HAL_I2C_ERROR_AF) {
-	    BNO055_printf("HAL_I2C_ERROR_AF\r\n");
-	  } else if (error == HAL_I2C_ERROR_OVR) {
-	    BNO055_printf("HAL_I2C_ERROR_OVR\r\n");
-	  } else if (error == HAL_I2C_ERROR_DMA) {
-	    BNO055_printf("HAL_I2C_ERROR_DMA\r\n");
-	  } else if (error == HAL_I2C_ERROR_TIMEOUT) {
-	    BNO055_printf("HAL_I2C_ERROR_TIMEOUT\r\n");
-	  }
-
-	  HAL_I2C_StateTypeDef state = HAL_I2C_GetState(bno055->i2c->hi2c);
-	  if (state == HAL_I2C_STATE_RESET) {
-	    BNO055_printf("HAL_I2C_STATE_RESET\r\n");
-	  } else if (state == HAL_I2C_STATE_READY) {
-	    BNO055_printf("HAL_I2C_STATE_RESET\r\n");
-	  } else if (state == HAL_I2C_STATE_BUSY) {
-	    BNO055_printf("HAL_I2C_STATE_BUSY\r\n");
-	  } else if (state == HAL_I2C_STATE_BUSY_TX) {
-	    BNO055_printf("HAL_I2C_STATE_BUSY_TX\r\n");
-	  } else if (state == HAL_I2C_STATE_BUSY_RX) {
-	    BNO055_printf("HAL_I2C_STATE_BUSY_RX\r\n");
-	  } else if (state == HAL_I2C_STATE_LISTEN) {
-	    BNO055_printf("HAL_I2C_STATE_LISTEN\r\n");
-	  } else if (state == HAL_I2C_STATE_BUSY_TX_LISTEN) {
-	    BNO055_printf("HAL_I2C_STATE_BUSY_TX_LISTEN\r\n");
-	  } else if (state == HAL_I2C_STATE_BUSY_RX_LISTEN) {
-	    BNO055_printf("HAL_I2C_STATE_BUSY_RX_LISTEN\r\n");
-	  } else if (state == HAL_I2C_STATE_ABORT) {
-	    BNO055_printf("HAL_I2C_STATE_ABORT\r\n");
-	  } else if (state == HAL_I2C_STATE_TIMEOUT) {
-	    BNO055_printf("HAL_I2C_STATE_TIMEOUT\r\n");
-	  } else if (state == HAL_I2C_STATE_ERROR) {
-	    BNO055_printf("HAL_I2C_STATE_ERROR\r\n");
-	  }
+	return status;
 }
-__weak void BNO055_readData(BNO055_HandlerStruct* bno055, uint8_t reg, uint8_t *data, uint8_t len)
+__weak uint8_t BNO055_readData(BNO055_HandlerStruct* bno055, uint8_t reg, uint8_t *data, uint8_t len)
 {
+	int status;
 #ifdef USE_RTOS
-	I2C_OS_MEM_Read_DMA(bno055->i2c, bno055->Address << 1, reg, 1, data, len, BNO055_READ_TIMEOUT);
+	status = I2C_OS_MEM_Read_DMA(bno055->i2c, bno055->Address << 1, reg, 1, data, len, BNO055_READ_TIMEOUT);
 
 #else
-	HAL_I2C_Mem_Read_DMA(bno055->i2c, bno055->Address << 1, reg, 1, data, len, BNO055_READ_TIMEOUT);
+	status = HAL_I2C_Mem_Read_DMA(bno055->i2c, bno055->Address << 1, reg, 1, data, len, BNO055_READ_TIMEOUT);
 #endif
+	return status;
 }
 
 void BNO055_Init(BNO055_HandlerStruct* bno055, BNO055_I2CHandler* i2c, uint8_t Address)
@@ -202,18 +150,28 @@ uint8_t BNO055_getSystemError(BNO055_HandlerStruct* bno055) {
   return tmp;
 }
 
-BNO055_calibration_state_t BNO055_getCalibrationState(BNO055_HandlerStruct* bno055) {
+int BNO055_getCalibrationState(BNO055_HandlerStruct* bno055, BNO055_calibration_state_t* calib_state) {
   BNO055_setPage(bno055, 0);
-  BNO055_calibration_state_t cal = {.sys = 0, .gyro = 0, .mag = 0, .accel = 0};
   uint8_t calState = 0;
   BNO055_readData(bno055, BNO055_CALIB_STAT, &calState, 1);
-  cal.sys = (calState >> 6) & 0x03;
-  cal.gyro = (calState >> 4) & 0x03;
-  cal.accel = (calState >> 2) & 0x03;
-  cal.mag = calState & 0x03;
-  return cal;
+  calib_state->sys = (calState >> 6) & 0x03;
+  calib_state->gyro = (calState >> 4) & 0x03;
+  calib_state->accel = (calState >> 2) & 0x03;
+  calib_state->mag = calState & 0x03;
+  return 0;
 }
 
+//BNO055_calibration_state_t BNO055_getCalibrationState(BNO055_HandlerStruct* bno055) {
+//  BNO055_setPage(bno055, 0);
+//  BNO055_calibration_state_t cal = {.sys = 0, .gyro = 0, .mag = 0, .accel = 0};
+//  uint8_t calState = 0;
+//  BNO055_readData(bno055, BNO055_CALIB_STAT, &calState, 1);
+//  cal.sys = (calState >> 6) & 0x03;
+//  cal.gyro = (calState >> 4) & 0x03;
+//  cal.accel = (calState >> 2) & 0x03;
+//  cal.mag = calState & 0x03;
+//  return cal;
+//}
 
 BNO055_calibration_data_t BNO055_getCalibrationData(BNO055_HandlerStruct* bno055) {
   BNO055_calibration_data_t calData;
@@ -257,7 +215,7 @@ void BNO055_setCalibrationData(BNO055_HandlerStruct* bno055, BNO055_calibration_
   BNO055_setOperationMode(bno055, operationMode);
 }
 
-BNO055_vector_t BNO055_getVector(BNO055_HandlerStruct* bno055, uint8_t vec) {
+int BNO055_getVector(BNO055_HandlerStruct* bno055, uint8_t vec, BNO055_vector_t* result) {
   BNO055_setPage(bno055, 0);
   uint8_t buffer[8] = {0};    // Quaternion need 8 bytes
 
@@ -281,41 +239,41 @@ BNO055_vector_t BNO055_getVector(BNO055_HandlerStruct* bno055, uint8_t vec) {
     scale = quaScale;
   }
 
-  BNO055_vector_t xyz = {.w = 0, .x = 0, .y = 0, .z = 0};
+//  BNO055_vector_t xyz = {.w = 0, .x = 0, .y = 0, .z = 0};
   if (vec == BNO055_VECTOR_QUATERNION) {
-    xyz.w = (int16_t)((buffer[1] << 8) | buffer[0]) / scale;
-    xyz.x = (int16_t)((buffer[3] << 8) | buffer[2]) / scale;
-    xyz.y = (int16_t)((buffer[5] << 8) | buffer[4]) / scale;
-    xyz.z = (int16_t)((buffer[7] << 8) | buffer[6]) / scale;
+	result->w = (int16_t)((buffer[1] << 8) | buffer[0]) / scale;
+	result->x = (int16_t)((buffer[3] << 8) | buffer[2]) / scale;
+	result->y = (int16_t)((buffer[5] << 8) | buffer[4]) / scale;
+	result->z = (int16_t)((buffer[7] << 8) | buffer[6]) / scale;
   } else {
-    xyz.x = (int16_t)((buffer[1] << 8) | buffer[0]) / scale;
-    xyz.y = (int16_t)((buffer[3] << 8) | buffer[2]) / scale;
-    xyz.z = (int16_t)((buffer[5] << 8) | buffer[4]) / scale;
+	result->x = (int16_t)((buffer[1] << 8) | buffer[0]) / scale;
+	result->y = (int16_t)((buffer[3] << 8) | buffer[2]) / scale;
+	result->z = (int16_t)((buffer[5] << 8) | buffer[4]) / scale;
   }
 
-  return xyz;
+  return 0;
 }
 
-BNO055_vector_t BNO055_getVectorAccelerometer(BNO055_HandlerStruct* bno055) {
-  return BNO055_getVector(bno055, BNO055_VECTOR_ACCELEROMETER);
+int BNO055_getVectorAccelerometer(BNO055_HandlerStruct* bno055, BNO055_vector_t* result) {
+  return BNO055_getVector(bno055, BNO055_VECTOR_ACCELEROMETER, result);
 }
-BNO055_vector_t BNO055_getVectorMagnetometer(BNO055_HandlerStruct* bno055) {
-  return BNO055_getVector(bno055, BNO055_VECTOR_MAGNETOMETER);
+int BNO055_getVectorMagnetometer(BNO055_HandlerStruct* bno055, BNO055_vector_t* result) {
+  return BNO055_getVector(bno055, BNO055_VECTOR_MAGNETOMETER, result);
 }
-BNO055_vector_t BNO055_getVectorGyroscope(BNO055_HandlerStruct* bno055) {
-  return BNO055_getVector(bno055, BNO055_VECTOR_GYROSCOPE);
+int BNO055_getVectorGyroscope(BNO055_HandlerStruct* bno055, BNO055_vector_t* result) {
+  return BNO055_getVector(bno055, BNO055_VECTOR_GYROSCOPE, result);
 }
-BNO055_vector_t BNO055_getVectorEuler(BNO055_HandlerStruct* bno055) {
-  return BNO055_getVector(bno055, BNO055_VECTOR_EULER);
+int BNO055_getVectorEuler(BNO055_HandlerStruct* bno055, BNO055_vector_t* result) {
+  return BNO055_getVector(bno055, BNO055_VECTOR_EULER, result);
 }
-BNO055_vector_t BNO055_getVectorLinearAccel(BNO055_HandlerStruct* bno055) {
-  return BNO055_getVector(bno055, BNO055_VECTOR_LINEARACCEL);
+int BNO055_getVectorLinearAccel(BNO055_HandlerStruct* bno055, BNO055_vector_t* result) {
+  return BNO055_getVector(bno055, BNO055_VECTOR_LINEARACCEL, result);
 }
-BNO055_vector_t BNO055_getVectorGravity(BNO055_HandlerStruct* bno055) {
-  return BNO055_getVector(bno055, BNO055_VECTOR_GRAVITY);
+int BNO055_getVectorGravity(BNO055_HandlerStruct* bno055, BNO055_vector_t* result) {
+  return BNO055_getVector(bno055, BNO055_VECTOR_GRAVITY, result);
 }
-BNO055_vector_t BNO055_getVectorQuaternion(BNO055_HandlerStruct* bno055) {
-  return BNO055_getVector(bno055, BNO055_VECTOR_QUATERNION);
+int BNO055_getVectorQuaternion(BNO055_HandlerStruct* bno055, BNO055_vector_t* result) {
+  return BNO055_getVector(bno055, BNO055_VECTOR_QUATERNION, result);
 }
 
 void BNO055_setAxisMap(BNO055_HandlerStruct* bno055, BNO055_axis_map_t axis) {
