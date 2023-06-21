@@ -11,20 +11,77 @@ uint16_t quaScale = (1<<14);    // 2^14
 
 __weak void BNO055_writeData(BNO055_HandlerStruct* bno055, uint8_t reg, uint8_t data)
 {
+	int status;
 #ifdef USE_RTOS
-	I2C_OS_MEM_Write_DMA(bno055->i2c, bno055->Address, reg, 1, data, 1, BNO055_WRITE_TIMEOUT);
+	status = I2C_OS_MEM_Write_DMA(bno055->i2c, bno055->Address << 1, reg, 1, &data, 1, BNO055_WRITE_TIMEOUT);
 
 #else
-	HAL_I2C_Mem_Write_DMA(bno055->i2c, bno055->Address, reg, 1, data, 1, BNO055_WRITE_TIMEOUT);
+	status = HAL_I2C_Mem_Write_DMA(bno055->i2c, bno055->Address << 1, reg, 1, data, 1, BNO055_WRITE_TIMEOUT);
 #endif
+
+	if (status == HAL_OK) {
+	    return;
+	  }
+
+	  if (status == HAL_ERROR) {
+	    BNO055_printf("HAL_I2C_Master_Transmit HAL_ERROR\r\n");
+	  } else if (status == HAL_TIMEOUT) {
+	    BNO055_printf("HAL_I2C_Master_Transmit HAL_TIMEOUT\r\n");
+	  } else if (status == HAL_BUSY) {
+	    BNO055_printf("HAL_I2C_Master_Transmit HAL_BUSY\r\n");
+	  } else {
+	    BNO055_printf("Unknown status data %d \r\n", status);
+	  }
+
+	  uint32_t error = HAL_I2C_GetError(bno055->i2c->hi2c);
+	  if (error == HAL_I2C_ERROR_NONE) {
+	    return;
+	  } else if (error == HAL_I2C_ERROR_BERR) {
+	    BNO055_printf("HAL_I2C_ERROR_BERR\r\n");
+	  } else if (error == HAL_I2C_ERROR_ARLO) {
+	    BNO055_printf("HAL_I2C_ERROR_ARLO\r\n");
+	  } else if (error == HAL_I2C_ERROR_AF) {
+	    BNO055_printf("HAL_I2C_ERROR_AF\r\n");
+	  } else if (error == HAL_I2C_ERROR_OVR) {
+	    BNO055_printf("HAL_I2C_ERROR_OVR\r\n");
+	  } else if (error == HAL_I2C_ERROR_DMA) {
+	    BNO055_printf("HAL_I2C_ERROR_DMA\r\n");
+	  } else if (error == HAL_I2C_ERROR_TIMEOUT) {
+	    BNO055_printf("HAL_I2C_ERROR_TIMEOUT\r\n");
+	  }
+
+	  HAL_I2C_StateTypeDef state = HAL_I2C_GetState(bno055->i2c->hi2c);
+	  if (state == HAL_I2C_STATE_RESET) {
+	    BNO055_printf("HAL_I2C_STATE_RESET\r\n");
+	  } else if (state == HAL_I2C_STATE_READY) {
+	    BNO055_printf("HAL_I2C_STATE_RESET\r\n");
+	  } else if (state == HAL_I2C_STATE_BUSY) {
+	    BNO055_printf("HAL_I2C_STATE_BUSY\r\n");
+	  } else if (state == HAL_I2C_STATE_BUSY_TX) {
+	    BNO055_printf("HAL_I2C_STATE_BUSY_TX\r\n");
+	  } else if (state == HAL_I2C_STATE_BUSY_RX) {
+	    BNO055_printf("HAL_I2C_STATE_BUSY_RX\r\n");
+	  } else if (state == HAL_I2C_STATE_LISTEN) {
+	    BNO055_printf("HAL_I2C_STATE_LISTEN\r\n");
+	  } else if (state == HAL_I2C_STATE_BUSY_TX_LISTEN) {
+	    BNO055_printf("HAL_I2C_STATE_BUSY_TX_LISTEN\r\n");
+	  } else if (state == HAL_I2C_STATE_BUSY_RX_LISTEN) {
+	    BNO055_printf("HAL_I2C_STATE_BUSY_RX_LISTEN\r\n");
+	  } else if (state == HAL_I2C_STATE_ABORT) {
+	    BNO055_printf("HAL_I2C_STATE_ABORT\r\n");
+	  } else if (state == HAL_I2C_STATE_TIMEOUT) {
+	    BNO055_printf("HAL_I2C_STATE_TIMEOUT\r\n");
+	  } else if (state == HAL_I2C_STATE_ERROR) {
+	    BNO055_printf("HAL_I2C_STATE_ERROR\r\n");
+	  }
 }
-__weak void BNO055_readData(BNO055_HandlerStruct* bno055, uint8_t reg, uint8_t len, uint8_t *data)
+__weak void BNO055_readData(BNO055_HandlerStruct* bno055, uint8_t reg, uint8_t *data, uint8_t len)
 {
 #ifdef USE_RTOS
-	I2C_OS_MEM_Read_DMA(bno055->i2c, bno055->Address, reg, 1, data, len, BNO055_READ_TIMEOUT);
+	I2C_OS_MEM_Read_DMA(bno055->i2c, bno055->Address << 1, reg, 1, data, len, BNO055_READ_TIMEOUT);
 
 #else
-	HAL_I2C_Mem_Read_DMA(bno055->i2c, bno055->Address, reg, 1, data, len, BNO055_READ_TIMEOUT);
+	HAL_I2C_Mem_Read_DMA(bno055->i2c, bno055->Address << 1, reg, 1, data, len, BNO055_READ_TIMEOUT);
 #endif
 }
 
@@ -34,6 +91,8 @@ void BNO055_Init(BNO055_HandlerStruct* bno055, BNO055_I2CHandler* i2c, uint8_t A
 	bno055->i2c = i2c;
 	BNO055_setup(bno055);
 }
+
+
 
 void BNO055_setPage(BNO055_HandlerStruct* bno055, uint8_t page) {
 	BNO055_writeData(bno055, BNO055_PAGE_ID, page);
@@ -76,7 +135,7 @@ void BNO055_disableExternalCrystal(BNO055_HandlerStruct* bno055) { BNO055_setExt
 
 void BNO055_reset(BNO055_HandlerStruct* bno055) {
   BNO055_writeData(bno055, BNO055_SYS_TRIGGER, 0x20);
-  BNO055_delay(700);
+  BNO055_Delay(700);
 }
 
 int8_t BNO055_getTemp(BNO055_HandlerStruct* bno055) {
@@ -92,14 +151,14 @@ void BNO055_setup(BNO055_HandlerStruct* bno055) {
   uint8_t id = 0;
   BNO055_readData(bno055, BNO055_CHIP_ID, &id, 1);
   if (id != BNO055_ID) {
-    printf("Can't find BNO055, id: 0x%02x. Please check your wiring.\r\n", id);
+    BNO055_printf("Can't find BNO055, id: 0x%02x. Please check your wiring.\r\n", id);
   }
   BNO055_setPage(bno055, 0);
   BNO055_writeData(bno055, BNO055_SYS_TRIGGER, 0x0);
 
   // Select BNO055 config mode
   BNO055_setOperationModeConfig(bno055);
-  BNO055_delay(10);
+  BNO055_Delay(10);
 }
 
 int16_t BNO055_getSWRevision(BNO055_HandlerStruct* bno055) {

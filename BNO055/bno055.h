@@ -11,6 +11,7 @@
 #include "main.h"
 
 #ifdef USE_RTOS
+#include "cmsis_os.h"
 #include "I2CHandler/I2C_Handler.h"
 #define BNO055_printf		SyncPrintf
 #define BNO055_Delay		osDelay
@@ -288,8 +289,7 @@ enum BNO055_axis_map_sign_t {
 void BNO055_Init(BNO055_HandlerStruct* bno055, BNO055_I2CHandler* i2c, uint8_t Address);
 
 void BNO055_writeData(BNO055_HandlerStruct* bno055, uint8_t reg, uint8_t data);
-void BNO055_readData(BNO055_HandlerStruct* bno055, uint8_t reg, uint8_t len, uint8_t *data);
-void BNO055_delay(int time);
+void BNO055_readData(BNO055_HandlerStruct* bno055, uint8_t reg, uint8_t *data, uint8_t len);
 
 void BNO055_reset(BNO055_HandlerStruct* bno055);
 BNO055_opmode_t BNO055_getOperationMode(BNO055_HandlerStruct* bno055);
