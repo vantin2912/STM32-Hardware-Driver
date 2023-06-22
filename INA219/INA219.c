@@ -64,7 +64,7 @@ int16_t INA219_ReadPower(INA219_t *ina219)
 void INA219_Reset(INA219_t *ina219)
 {
 	Write16(ina219, INA219_REG_CONFIG, INA219_CONFIG_RESET);
-	HAL_Delay(1);
+	osDelay(1);
 }
 
 void INA219_setCalibration(INA219_t *ina219, uint16_t CalibrationData)

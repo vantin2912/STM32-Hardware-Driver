@@ -39,11 +39,18 @@
 #define Engine_Forbid_Backward				0b00000010
 #define Engine_Forbid_ForAndBackward		0b00000011
 
-#define	Engine_Brake_GPIOLevel				1
+
+
+#define	Engine_Brake_GPIOLevel				0
 #define Engine_GasEn_GPIOLevel				1
-#define Engine_Forward_GPIOLevel			1
+#define Engine_Forward_GPIOLevel			0
 
 #define Engine_TIM_MaxPulse			10000
+
+typedef enum {
+	ENGINE_BRAKE_SET,
+	ENGINE_BRAKE_CLEAR
+} Engine_Brake_State;
 
 typedef struct Engine_HandlerStruct{
 	TIM_HandleTypeDef* PWM_TIM;
@@ -60,12 +67,15 @@ typedef struct Engine_HandlerStruct{
 
 
 
-int Engine_Init(Engine_HandlerStruct* Engine);
+int Engine_Init(Engine_HandlerStruct* Engine, int16_t NegLimit, int16_t PosLimit);
 int Engine_TimerInit(Engine_HandlerStruct* Engine);
+int Engine_ConfigControlPin(Engine_HandlerStruct* Engine, GPIO_HandlerStruct BrakePin,
+						GPIO_HandlerStruct DirectionPin, GPIO_HandlerStruct GasEnPin);
+int Engine_ConfigTimer(Engine_HandlerStruct* Engine, TIM_HandleTypeDef* htim, uint32_t TIM_Channel);
 
 int Engine_SetSpeed(Engine_HandlerStruct* Engine, int16_t PulseVal);
 
-int Engine_Brake(Engine_HandlerStruct* Engine);
+int Engine_Brake(Engine_HandlerStruct* Engine, Engine_Brake_State state);
 
 int Engine_AllowRun(Engine_HandlerStruct* Engine, uint8_t Engine_Direction);
 int Engine_ForbidRun(Engine_HandlerStruct* Engine, uint8_t Engine_Direction);

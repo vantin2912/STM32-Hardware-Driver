@@ -13,8 +13,8 @@
 #include "I2CHandler/I2C_Handler.h"
 #define INA219_I2C_Handle	I2C_OS_HandlerStruct
 
-#define	INA219_Mem_Read 	I2C_OS_MEM_Read_IT
-#define INA219_Mem_Write	I2C_OS_MEM_Write_IT
+#define	INA219_Mem_Read 	I2C_OS_MEM_Read_DMA
+#define INA219_Mem_Write	I2C_OS_MEM_Write_DMA
 #define INA219_DeviceReady	I2C_OS_IsDeviceReady
 
 #else
