@@ -5,6 +5,7 @@
   extern "C" {
 #endif
 
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -13,6 +14,7 @@
 #ifdef USE_RTOS
 #include "cmsis_os.h"
 #include "I2CHandler/I2C_Handler.h"
+
 #define BNO055_printf		SyncPrintf
 #define BNO055_Delay		osDelay
 #define BNO055_I2CHandler 	I2C_OS_HandlerStruct

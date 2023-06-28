@@ -23,7 +23,7 @@ void Write16(INA219_t *ina219, uint8_t Register, uint16_t Value)
 	uint8_t addr[2];
 	addr[0] = (Value >> 8) & 0xff;  // upper byte
 	addr[1] = (Value >> 0) & 0xff; // lower byte
-	INA219_Mem_Write(ina219->ina219_i2c, (ina219->Address<<1), Register, 1, (uint8_t*)addr, 2, 1000);
+	INA219_Mem_Write(ina219->ina219_i2c, (ina219->Address<<1), Register, 1, (uint8_t*)addr, 2, 100);
 }
 
 uint16_t INA219_ReadBusVoltage(INA219_t *ina219)
@@ -134,6 +134,25 @@ void INA219_setCalibration_32V_10A_5mOhm(INA219_t *ina219)
 	ina219->calibrationValue = 16384;
 	ina219->currentDivider_mA = 2;    // Current LSB = 500uA per bit (1000/40 = 25)
 	ina219->powerMultiplier_mW = 10; // Power LSB = 10000uW per bit
+
+	INA219_setCalibration(ina219, ina219->calibrationValue);
+	INA219_setConfig(ina219, config);
+}
+/**
+ *	Calib for 1 mOhm Shunt Resistor
+ *	@warning Not test yet
+ */
+void INA219_setCalibration_32V_10A_1mOhm(INA219_t *ina219)
+{
+	uint16_t config = INA219_CONFIG_BVOLTAGERANGE_32V |
+						INA219_CONFIG_GAIN_8_320MV | INA219_CONFIG_BADCRES_12BIT |
+						INA219_CONFIG_SADCRES_12BIT_1S_532US |
+						INA219_CONFIG_MODE_SANDBVOLT_CONTINUOUS;
+
+
+	ina219->calibrationValue = 40960;
+	ina219->currentDivider_mA = 1;    //
+	ina219->powerMultiplier_mW = 20; //
 
 	INA219_setCalibration(ina219, ina219->calibrationValue);
 	INA219_setConfig(ina219, config);
