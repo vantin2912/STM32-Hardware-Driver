@@ -21,10 +21,12 @@ int LEDSpeaker_SetLED(LEDSpeaker_HandleStruct* handler, uint8_t LeftState, uint8
 
 	GPIOLevel = StopState ? LED_STOP_ON_GPIOLEVEL : !LED_STOP_ON_GPIOLEVEL;
 	GPIO_WritePin(*handler->StopPin, GPIOLevel);
+	return 0;
 }
 
 int LEDSpeaker_setSpeaker(LEDSpeaker_HandleStruct* handler, uint8_t SpeakerState)
 {
 	uint8_t GPIOLevel = SpeakerState ? SPEAKER_ON_GPIOLEVEL : !SPEAKER_ON_GPIOLEVEL;
 	GPIO_WritePin(*handler->SpeakerPin, GPIOLevel);
+	return 0;
 }
