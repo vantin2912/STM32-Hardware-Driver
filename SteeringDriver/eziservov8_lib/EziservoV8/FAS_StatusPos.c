@@ -21,9 +21,10 @@ int FAS_GetAxisStatus(FAS_HandlerStruct* nPortNo, uint8_t iSlaveNo, uint32_t* dw
 
     uint8_t SyncByte = FAS_PackData(iSlaveNo, FrameType, 0, 0, SendBuffer, &SendLen);
     uint8_t ComStatus;
-
+    FAS_Lock(nPortNo, 10);
     FAS_Send(nPortNo, SendBuffer, SendLen);
     ComStatus = FAS_Receive(nPortNo, RcvBuffer,&RcvLen);
+    FAS_Unlock(nPortNo);
 
 	if(ComStatus != FMM_OK) return ComStatus;
 	ComStatus = FAS_UnPackData(RcvBuffer, RcvLen, iSlaveNo, SyncByte, FrameType, RespData, &RespDataLen);
@@ -300,14 +301,14 @@ int FAS_ClearPosition(FAS_HandlerStruct* nPortNo, uint8_t iSlaveNo)
 
 	uint8_t SyncByte = FAS_PackData(iSlaveNo, FrameType, SendData, SendDataLen, SendBuffer, &SendLen);
 	uint8_t ComStatus;
-
+	FAS_Lock(nPortNo, 20);
 	FAS_Send(nPortNo, SendBuffer, SendLen);
 //	free(SendData);
 //	free(SendBuffer);
-
 	ComStatus = FAS_Receive(nPortNo, RcvBuffer,&RcvLen);
-	ComStatus = FAS_UnPackData(RcvBuffer, RcvLen, iSlaveNo, SyncByte, FrameType, RespData, &RespDataLen);
+ 	FAS_Unlock(nPortNo);
 
+	ComStatus = FAS_UnPackData(RcvBuffer, RcvLen, iSlaveNo, SyncByte, FrameType, RespData, &RespDataLen);
 	ComStatus = RespDataLen != RcvDataLen? FMC_RECVPACKET_ERROR: RespData[0];
 
 //	free(RcvBuffer);
