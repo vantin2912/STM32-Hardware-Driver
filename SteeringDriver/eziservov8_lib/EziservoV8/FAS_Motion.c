@@ -327,31 +327,31 @@ int FAS_PositionAbsOverride(FAS_HandlerStruct* nPortNo, uint8_t iSlaveNo, int32_
     const uint8_t RcvDataLen = 1;
     uint8_t ComStatus;
 
-
-    uint8_t* RcvBuffer = (uint8_t*)malloc(15 + 2*RcvDataLen);
+    uint8_t RcvBuffer[20];
+//    uint8_t* RcvBuffer = (uint8_t*)malloc(15 + 2*RcvDataLen);
     uint8_t RcvLen;
 
-    uint8_t* RespData = (uint8_t*)malloc(RcvDataLen + 2);
+    uint8_t RespData[8];
+//    uint8_t* RespData = (uint8_t*)malloc(RcvDataLen + 2);
 	uint8_t RespDataLen;
 
-    uint8_t* Data = (uint8_t*)malloc(SendDataLen);
-    uint8_t* SendBuffer = (uint8_t*)malloc(15 + 2 * SendDataLen);
+    uint8_t Data[8];
+//    uint8_t* Data = (uint8_t*)malloc(SendDataLen);
+
+    uint8_t SendBuffer[24];
+//    uint8_t* SendBuffer = (uint8_t*)malloc(15 + 2 * SendDataLen);
     uint8_t SendLen;
 
     memcpy(Data, &lOverridePos, 4);
     uint8_t SyncByte = FAS_PackData(iSlaveNo, FrameType, Data, SendDataLen, SendBuffer, &SendLen);
+    FAS_Lock(nPortNo, 10);
     FAS_Send(nPortNo, SendBuffer, SendLen);
-    free(SendBuffer);
-    free(Data);
-
     ComStatus = FAS_Receive(nPortNo, RcvBuffer,&RcvLen);
+	FAS_Unlock(nPortNo);
 	ComStatus = FAS_UnPackData(RcvBuffer, RcvLen, iSlaveNo, SyncByte, FrameType, RespData, &RespDataLen);
 	if(ComStatus != FMM_OK) return ComStatus;
 
 	ComStatus = RespDataLen != RcvDataLen ? FMM_UNKNOWN_ERROR:RespData[0];
-
-	free(RespData);
-	free(RcvBuffer);
 
 	return ComStatus;
 }

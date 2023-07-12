@@ -10,7 +10,7 @@
 
 const osThreadAttr_t GPSTask_attributes = {
   .name = "GPSTask",
-  .stack_size = 700 * 4,
+  .stack_size = 200 * 4,
   .priority = (osPriority_t) osPriorityNormal2,
 };
 
@@ -19,7 +19,7 @@ void GPS_ReadThread(void* Handler)
 	GPS_HandlerStruct* gpsHandler = (GPS_HandlerStruct*) Handler;
 	lwgps_t lwgps_parser;
 	lwgps_init(&lwgps_parser);
-	char rcvBuffer[GPS_RcvBufferSize];
+	static char rcvBuffer[GPS_RcvBufferSize];
 	int Status;
 	uint16_t rcvLen = 0;
 	while(1)
@@ -32,9 +32,8 @@ void GPS_ReadThread(void* Handler)
 		if(Status == osOK)
 		{
 			lwgps_process(&lwgps_parser, rcvBuffer, rcvLen);
-			osMutexAcquire(gpsHandler->dataLock, 10);
-			memcpy(&gpsHandler->lwgps, & lwgps_parser, sizeof(lwgps_t));
-			osMutexRelease(gpsHandler->dataLock);
+			gpsHandler->GPSData.Lat = lwgps_parser.latitude;
+			gpsHandler->GPSData.Long = lwgps_parser.longitude;
 		}
 	}
 }
@@ -47,19 +46,20 @@ int GPS_Init(GPS_HandlerStruct* gps, UART_OS_HandlerStruct* uart, uint32_t Updat
 
 	gps->uart = uart;
 	gps->updateTime = UpdateTime;
-	return HAL_OK;
+	return osOK;
 }
 int GPS_Start(GPS_HandlerStruct* gps, uint8_t state)
 {
 	gps->readEnable = 1;
 	osThreadResume(gps->readThread);
-	return HAL_OK;
+	return osOK;
 }
 
 int GPS_GetData(GPS_HandlerStruct* gps, GPS_DataStruct* Data)
 {
-	osMutexAcquire(gps->dataLock, 10);
-	memcpy(Data, &gps->lwgps, sizeof(GPS_DataStruct));
+	int Status = osMutexAcquire(gps->dataLock, 10);
+	Data->Long = gps->GPSData.Long;
+	Data->Lat = gps->GPSData.Lat;
 	osMutexRelease(gps->dataLock);
-	return HAL_OK;
+	return Status;
 }

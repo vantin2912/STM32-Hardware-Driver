@@ -39,6 +39,7 @@ static const unsigned short TABLE_CRCVALUE[] =
 };
 
 static const char FAS_Header[] = { 0xAA, 0xCC };
+static const char FAS_HeaderTmp[] = { 0x00, 0xCC };
 static const char FAS_Tail[] = { 0xAA, 0xEE };
 static void FAS_AddByteStuffing(uint8_t* Buffer, uint8_t* BufferLen)
 {
@@ -144,7 +145,7 @@ uint8_t FAS_UnPackData(uint8_t* Buffer, uint8_t BufferLen, uint8_t SlaveID, uint
 	uint8_t _DataLen = BufferLen;
 	uint8_t Status;
 	uint16_t FasCRC;
-	Status = memcmp(Buffer,FAS_Header, 2);
+	Status = memcmp(Buffer,FAS_HeaderTmp, 2);
 	if(Status != 0) return FMP_PACKETERROR;
 	Status = memcmp(Buffer+_DataLen - 2, FAS_Tail,2);
 	if(Status != 0) return FMP_PACKETERROR;

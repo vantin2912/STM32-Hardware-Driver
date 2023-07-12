@@ -13,12 +13,12 @@
 uint8_t FAS_Send(FAS_HandlerStruct* Port, uint8_t* SendBuffer, uint8_t Len)
 {
 
-    HAL_StatusTypeDef Status = HAL_ERROR;
+    int Status = HAL_ERROR;
 	Status = UART_OS_Transmit(Port->uart, SendBuffer, Len);
-	if(Status !=  0)
+	if(Status !=  osOK)
 	{
 		SyncPrintf("EZI UART Transmit Error \r\n");
-		return FMM_NOT_OPEN;
+		return FMC_TIMEOUT_ERROR;
 
 	}
 	return FMM_OK;
@@ -39,8 +39,8 @@ uint8_t FAS_Receive(FAS_HandlerStruct* Port, uint8_t* RcvBuffer, uint8_t* RxLen)
 	{
 	}
 
-	if(Status == HAL_ERROR)
-		return FMM_NOT_OPEN;
+	if(Status != osOK)
+		return FMC_TIMEOUT_ERROR;
 	else
 		return FMM_OK;
 }
@@ -60,8 +60,8 @@ uint8_t FAS_Init(FAS_HandlerStruct* nPortNo)
 
 uint8_t Wheel_Init(Wheel_HandlerStruct* SteerWheel, UART_OS_HandlerStruct* uart)
 {
-	SteerWheel->EziHandler->uart = uart;
-	FAS_Init(SteerWheel->EziHandler);
+	SteerWheel->EziHandler.uart = uart;
+	FAS_Init(&SteerWheel->EziHandler);
 
 	Wheel_setLimit(SteerWheel, 25, 25);
 	Wheel_ClearPos(SteerWheel);
@@ -77,10 +77,10 @@ uint8_t Wheel_setLimit(Wheel_HandlerStruct* SteerWheel, float LeftLimit, float R
 uint8_t Wheel_Start(Wheel_HandlerStruct* SteerWheel)
 {
 	uint8_t Status;
-	Status = FAS_ServoAlarmReset(SteerWheel->EziHandler, SteerWheel->devID);
+	Status = FAS_ServoAlarmReset(&SteerWheel->EziHandler, SteerWheel->devID);
 
 	if(Status != FMM_OK) return Wheel_Failed;
-	Status = FAS_ServoEnable(SteerWheel->EziHandler, SteerWheel->devID, 1);
+	Status = FAS_ServoEnable(&SteerWheel->EziHandler, SteerWheel->devID, 1);
 
 	if(Status != FMM_OK) return Wheel_Failed;
 
@@ -90,9 +90,9 @@ uint8_t Wheel_Start(Wheel_HandlerStruct* SteerWheel)
 uint8_t Wheel_Stop(Wheel_HandlerStruct* SteerWheel)
 {
 	uint8_t Status;
-	Status = FAS_MoveStop(SteerWheel->EziHandler, SteerWheel->devID);
+	Status = FAS_MoveStop(&SteerWheel->EziHandler, SteerWheel->devID);
 	if(Status != FMM_OK) return Wheel_Failed;
-	FAS_ServoEnable(SteerWheel->EziHandler, SteerWheel->devID, 1);
+	FAS_ServoEnable(&SteerWheel->EziHandler, SteerWheel->devID, 1);
 	if(Status != FMM_OK) return Wheel_Failed;
 
 	return Wheel_OK;
@@ -100,7 +100,7 @@ uint8_t Wheel_Stop(Wheel_HandlerStruct* SteerWheel)
 
 uint8_t Wheel_ChangeMode(Wheel_HandlerStruct* SteerWheel, Wheel_Mode mode)
 {
-	return FAS_SetInputAssignMap(SteerWheel->EziHandler, SteerWheel->devID, 7, 18, mode);
+	return FAS_SetInputAssignMap(&SteerWheel->EziHandler, SteerWheel->devID, 7, 18, mode);
 }
 
 
@@ -111,14 +111,14 @@ uint8_t Wheel_SetAngle_ABS(Wheel_HandlerStruct* SteerWheel, float Angle)
 	uint8_t Status =0;
 	EZISERVO_AXISSTATUS AxisStatus ={0};
 
-	Status = FAS_GetAxisStatus(SteerWheel->EziHandler, SteerWheel->devID,(uint32_t*) &AxisStatus);
+	Status = FAS_GetAxisStatus(&SteerWheel->EziHandler, SteerWheel->devID,(uint32_t*) &AxisStatus);
 	if(Status != FMM_OK) return Wheel_Failed;
 	if(AxisStatus.FFLAG_MOTIONING == 1)
 	{
-		Status = FAS_PositionAbsOverride(SteerWheel->EziHandler, SteerWheel->devID, Pos);
+		Status = FAS_PositionAbsOverride(&SteerWheel->EziHandler, SteerWheel->devID, Pos);
 	}else
 	{
-		Status = FAS_MoveSingleAxisAbsPos(SteerWheel->EziHandler, SteerWheel->devID, Pos, Vel);
+		Status = FAS_MoveSingleAxisAbsPos(&SteerWheel->EziHandler, SteerWheel->devID, Pos, Vel);
 	}
 
 	if(Status != FMM_OK) return Wheel_Failed;
@@ -132,17 +132,17 @@ uint8_t Wheel_SetAngle_INC(Wheel_HandlerStruct* SteerWheel, float Angle)
 	uint8_t Status =0;
 	EZISERVO_AXISSTATUS AxisStatus= {0};
 
-	Status = FAS_GetAxisStatus(SteerWheel->EziHandler, SteerWheel->devID,(uint32_t*) &AxisStatus);
+	Status = FAS_GetAxisStatus(&SteerWheel->EziHandler, SteerWheel->devID,(uint32_t*) &AxisStatus);
 
 	if(Status != FMM_OK) return Wheel_Failed;
 	if(AxisStatus.FFLAG_MOTIONING == 1)
 	{
-		Status = FAS_PositionIncOverride(SteerWheel->EziHandler, SteerWheel->devID, Pos);
+		Status = FAS_PositionIncOverride(&SteerWheel->EziHandler, SteerWheel->devID, Pos);
 		SyncPrintf("Pos Override \r\n");
 	}else
 	{
 		SyncPrintf("Axis Inc \r\n");
-		Status = FAS_MoveSingleAxisIncPos(SteerWheel->EziHandler, SteerWheel->devID, Pos, Vel);
+		Status = FAS_MoveSingleAxisIncPos(&SteerWheel->EziHandler, SteerWheel->devID, Pos, Vel);
 	}
 	if(Status != FMM_OK) return Wheel_Failed;
 
@@ -162,14 +162,14 @@ uint8_t Wheel_SetAngleEx_ABS(Wheel_HandlerStruct* SteerWheel, float Angle, uint1
 	PosOption.wCustomDecelTime = DecTime;
 	PosOption.flagOption.BIT_USE_CUSTOMACCEL = AccTime > 0;
 	PosOption.flagOption.BIT_USE_CUSTOMDECEL = DecTime > 0;
-	Status = FAS_GetAxisStatus(SteerWheel->EziHandler, SteerWheel->devID,(uint32_t*) &AxisStatus);
+	Status = FAS_GetAxisStatus(&SteerWheel->EziHandler, SteerWheel->devID,(uint32_t*) &AxisStatus);
 	if(Status != FMM_OK) return Wheel_Failed;
 	if(AxisStatus.FFLAG_MOTIONING == 1)
 	{
-		Status = FAS_PositionAbsOverride(SteerWheel->EziHandler, SteerWheel->devID, Pos);
+		Status = FAS_PositionAbsOverride(&SteerWheel->EziHandler, SteerWheel->devID, Pos);
 	}else
 	{
-		Status = FAS_MoveSingleAxisAbsPosEx(SteerWheel->EziHandler, SteerWheel->devID, Pos, Vel, &PosOption);
+		Status = FAS_MoveSingleAxisAbsPosEx(&SteerWheel->EziHandler, SteerWheel->devID, Pos, Vel, &PosOption);
 	}
 
 	if(Status != FMM_OK) return Wheel_Failed;
@@ -188,17 +188,17 @@ uint8_t Wheel_SetAngleEx_INC(Wheel_HandlerStruct* SteerWheel, float Angle, uint1
 	PosOption.wCustomDecelTime = DecTime;
 	PosOption.flagOption.BIT_USE_CUSTOMACCEL = AccTime > 0;
 	PosOption.flagOption.BIT_USE_CUSTOMDECEL = DecTime > 0;
-	Status = FAS_GetAxisStatus(SteerWheel->EziHandler, SteerWheel->devID,(uint32_t*) &AxisStatus);
+	Status = FAS_GetAxisStatus(&SteerWheel->EziHandler, SteerWheel->devID,(uint32_t*) &AxisStatus);
 	if(Status != FMM_OK) return Wheel_Failed;
 	if(AxisStatus.FFLAG_MOTIONING == 1)
 	{
-		Status = FAS_PositionIncOverride(SteerWheel->EziHandler, SteerWheel->devID, Pos);
+		Status = FAS_PositionIncOverride(&SteerWheel->EziHandler, SteerWheel->devID, Pos);
 //		SyncPrintf("Pos Override Status 0x%.2x \r\n", Status);
 
 	}else
 	{
 //		SyncPrintf("Axis Inc \r\n");
-		Status = FAS_MoveSingleAxisIncPosEx(SteerWheel->EziHandler, SteerWheel->devID, Pos, Vel, &PosOption);
+		Status = FAS_MoveSingleAxisIncPosEx(&SteerWheel->EziHandler, SteerWheel->devID, Pos, Vel, &PosOption);
 	}
 
 	if(Status != FMM_OK) return Wheel_Failed;
@@ -208,7 +208,7 @@ uint8_t Wheel_SetAngleEx_INC(Wheel_HandlerStruct* SteerWheel, float Angle, uint1
 
 uint8_t Wheel_ClearPos(Wheel_HandlerStruct* SteerWheel)
 {
-	uint8_t Status = FAS_ClearPosition(SteerWheel->EziHandler, SteerWheel->devID);
+	uint8_t Status = FAS_ClearPosition(&SteerWheel->EziHandler, SteerWheel->devID);
 	if(Status != FMM_OK) return Wheel_Failed;
 	return Wheel_OK;
 }
@@ -226,7 +226,7 @@ uint8_t Wheel_GetCommandPos(Wheel_HandlerStruct* SteerWheel, float* CmdPos)
 {
 	int32_t CmdPulsePos = 0;
 
-	int CommStatus =  FAS_GetCommandPos(SteerWheel->EziHandler, SteerWheel->devID, &CmdPulsePos);
+	int CommStatus =  FAS_GetCommandPos(&SteerWheel->EziHandler, SteerWheel->devID, &CmdPulsePos);
 	if(CommStatus == FMM_OK)
 	{
 		*CmdPos = Pulse2Angle(CmdPulsePos);

@@ -43,7 +43,7 @@ typedef enum Wheel_Mode
 
 typedef struct Wheel_HandlerStruct
 {
-	FAS_HandlerStruct* EziHandler ;
+	FAS_HandlerStruct EziHandler ;
 	uint8_t devID;
 	float letfLimit, RightLimit;
 	uint8_t Mode;
