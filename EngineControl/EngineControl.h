@@ -81,7 +81,6 @@ int Engine_AllowRun(Engine_HandlerStruct* Engine, uint8_t Engine_Direction);
 int Engine_ForbidRun(Engine_HandlerStruct* Engine, uint8_t Engine_Direction);
 
 
-void Engine_Test(Engine_HandlerStruct* Engine);
-
+int Engine_inRange(Engine_HandlerStruct* Engine, int Val);
 
 #endif /* INC_EngineCONTROL_H_ */

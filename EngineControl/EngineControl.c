@@ -4,8 +4,7 @@
  *  Created on: Mar 12, 2021
  *      Author: vanti
  */
-#include "EngineControl.h"
-
+#include <EngineControl/EngineControl.h>
 #include "main.h"
 #include "string.h"
 
@@ -105,15 +104,6 @@ int Engine_Brake(Engine_HandlerStruct* Engine, Engine_Brake_State State)
 	return 0;
 }
 
-//void Engine_AllowRun()
-//{
-//	LL_TIM_CC_EnableChannel(MotorTimer, MotorTimer_Channel);
-//	LL_GPIO_SetOutputPin(Engine_Break_GPIO_Port, Engine_Break_Pin);
-////	LL_mDelay()
-//	LL_GPIO_ResetOutputPin(Engine_Break_GPIO_Port, Engine_Break_Pin);
-//	LL_GPIO_ResetOutputPin(Gas_Enable_GPIO_Port, Gas_Enable_Pin);
-//}
-
 int Engine_AllowRun(Engine_HandlerStruct* Engine, uint8_t Engine_Direction)
 {
 	CLEAR_BIT(Engine->ForbidStatus, Engine_Direction);
@@ -145,19 +135,7 @@ int Engine_ForbidRun(Engine_HandlerStruct* Engine, uint8_t Engine_Direction)
 	return 0;
 }
 
-
-
-
-void Engine_Test(Engine_HandlerStruct* Engine)
+int Engine_inRange(Engine_HandlerStruct* Engine, int Val)
 {
-//	for(uint16_t i = -Motor_MaxPWM; i < Motor_MaxPWM; i+= 100)
-//	{
-//		Engine_SetSpeed(i);
-//		LL_mDelay(500);
-//	}
-//	for(uint16_t i = Motor_MaxPWM; i > -Motor_MaxPWM; i-= 100)
-//	{
-//		Engine_SetSpeed(i);
-//		LL_mDelay(500);
-//	}
+	return (Val > Engine->NegLimit) && (Val < Engine->PosLimit);
 }
